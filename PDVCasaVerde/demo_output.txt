@@ -1,0 +1,53 @@
+PDV Casa Verde - Sistema de Ponto de Venda
+===========================================
+
+MENU PRINCIPAL:
+╔════════════════════════════════════════╗
+║      CASA VERDE - SISTEMA PDV         ║
+╚════════════════════════════════════════╝
+
+  COMANDAS:
+  1 - Abrir Nova Comanda
+  2 - Lançar Produto na Comanda
+  3 - Visualizar Comanda
+  4 - Fechar Comanda
+  5 - Listar Comandas Abertas
+
+  PRODUTOS:
+  6 - Cadastrar Produto
+  7 - Listar Produtos
+
+  COMISSÕES:
+  8 - Lançar Comissão
+  9 - Visualizar Comissões
+
+  0 - Sair
+
+PRODUTOS PRÉ-CADASTRADOS:
+═══ LISTA DE PRODUTOS ═══
+
+Código   Nome                      Categoria            Preço
+────────────────────────────────────────────────────────────
+2        Cerveja                   Bebida          R$    5.00
+50       Comissão                  Serviço         R$   50.00
+52       Balde de Skol             Bebida          R$   25.00
+
+EXEMPLO DE RECIBO:
+========================================
+           CASA VERDE PDV
+========================================
+COMANDA: 1
+CLIENTE: João Silva
+DATA/HORA: 30/10/2024 00:15
+========================================
+
+ITEM                    QTD   PREÇO
+----------------------------------------
+Cerveja                   2   R$   10.00
+Balde de Skol             1   R$   25.00
+----------------------------------------
+TOTAL:                    R$   35.00
+========================================
+
+       OBRIGADO PELA PREFERÊNCIA!
+========================================
