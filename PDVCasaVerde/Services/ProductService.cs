@@ -13,15 +13,27 @@ public class ProductService
         _context = context;
     }
 
+    public async Task<Product?> GetByIdAsync(int id)
+    {
+        return await _context.Products
+            .Include(p => p.Group)
+            .Include(p => p.Subgroup)
+            .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<Product?> GetByCodeAsync(int code)
     {
         return await _context.Products
+            .Include(p => p.Group)
+            .Include(p => p.Subgroup)
             .FirstOrDefaultAsync(p => p.Code == code && p.IsActive);
     }
 
     public async Task<List<Product>> GetAllAsync()
     {
         return await _context.Products
+            .Include(p => p.Group)
+            .Include(p => p.Subgroup)
             .Where(p => p.IsActive)
             .OrderBy(p => p.Code)
             .ToListAsync();
@@ -40,18 +52,31 @@ public class ProductService
         return product;
     }
 
-    public async Task<Product?> UpdateAsync(Product product)
+    public async Task<Product?> UpdateAsync(int id, Product product)
     {
-        var existing = await _context.Products.FindAsync(product.Id);
+        var existing = await _context.Products.FindAsync(id);
         if (existing == null) return null;
 
-        existing.Code = product.Code;
         existing.Name = product.Name;
         existing.Price = product.Price;
         existing.Category = product.Category;
         existing.IsActive = product.IsActive;
+        existing.GroupId = product.GroupId;
+        existing.SubgroupId = product.SubgroupId;
 
         await _context.SaveChangesAsync();
         return existing;
     }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+            return false;
+
+        product.IsActive = false;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
+
