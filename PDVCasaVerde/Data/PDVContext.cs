@@ -9,6 +9,8 @@ public class PDVContext : DbContext
     public DbSet<Command> Commands { get; set; }
     public DbSet<CommandItem> CommandItems { get; set; }
     public DbSet<Commission> Commissions { get; set; }
+    public DbSet<Group> Groups { get; set; }
+    public DbSet<Subgroup> Subgroups { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -22,6 +24,14 @@ public class PDVContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.HasOne(e => e.Group)
+                .WithMany(e => e.Products)
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Subgroup)
+                .WithMany(e => e.Products)
+                .HasForeignKey(e => e.SubgroupId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Command>(entity =>
@@ -45,6 +55,22 @@ public class PDVContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+        });
+
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasMany(e => e.Subgroups)
+                .WithOne(e => e.Group)
+                .HasForeignKey(e => e.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Subgroup>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Name);
         });
 
         // Seed initial data
