@@ -11,6 +11,10 @@ public class PDVContext : DbContext
     public DbSet<Commission> Commissions { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Subgroup> Subgroups { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<CustomerLedgerEntry> CustomerLedgerEntries { get; set; }
+    public DbSet<Sale> Sales { get; set; }
+    public DbSet<SaleItem> SaleItems { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -71,6 +75,45 @@ public class PDVContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Name);
+        });
+
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Name);
+            entity.Property(e => e.Balance).HasColumnType("decimal(18,2)");
+            entity.HasMany(e => e.LedgerEntries)
+                .WithOne(e => e.Customer)
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CustomerLedgerEntry>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+        });
+
+        modelBuilder.Entity<Sale>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.SaleNumber).IsUnique();
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)");
+            entity.HasMany(e => e.Items)
+                .WithOne(e => e.Sale)
+                .HasForeignKey(e => e.SaleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SaleItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.TotalPrice).HasColumnType("decimal(18,2)");
         });
 
         // Seed initial data

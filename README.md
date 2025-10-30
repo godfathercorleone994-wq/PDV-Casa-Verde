@@ -1,41 +1,48 @@
 # PDV Casa Verde - Sistema de Ponto de Venda
 
-Sistema PDV (Ponto de Venda) para boates e bares desenvolvido em C# com .NET 9.0 e SQLite.
+Sistema PDV (Ponto de Venda) para boates e bares desenvolvido em C# com .NET 9.0, SQLite e API REST.
 
-## Funcionalidades
+## 🚀 Funcionalidades
 
-### 🎫 Sistema de Comandas
-- Abertura de comandas com nome do cliente
-- Lançamento de produtos por código numérico
-- Visualização de comandas abertas e fechadas
-- Fechamento de comandas com impressão de recibo
+### 📊 API REST Completa
+- **Produtos**: CRUD completo com vinculação a Grupos e Subgrupos
+- **Grupos e Subgrupos**: Organização hierárquica de produtos
+- **Clientes**: Gestão de clientes com sistema de caderneta (débito/crédito)
+- **Vendas/Mesas**: Sistema de vendas vinculadas a mesas ou clientes
+- **Caderneta**: Sistema de fiado com controle de débitos e pagamentos
 
 ### 🍺 Cadastro de Produtos
-- Cadastro de produtos com código numérico
-- Preços e categorias
+- Produtos com código numérico, nome, preço e categoria
+- Vinculação a Grupos e Subgrupos
+- Controle de estoque
 - Produtos pré-cadastrados:
   - **Código 2**: Cerveja - R$ 5,00
   - **Código 52**: Balde de Skol - R$ 25,00
   - **Código 50**: Comissão - R$ 50,00
 
+### 🏪 Sistema de Mesas (F4)
+- Abertura de vendas vinculadas a mesas
+- Lançamento de produtos por código
+- Visualização de vendas abertas por mesa
+- Fechamento com diferentes formas de pagamento
+
+### 💳 Sistema de Caderneta (F5)
+- Vendas vinculadas a clientes
+- Controle de débitos automático
+- Adicionar crédito (pagamento de conta)
+- Histórico completo de transações
+
 ### 💰 Sistema de Comissões
 - Registro de comissões por garota/staff
 - Vinculação de comissões às comandas
-- Relatórios de comissões por staff
-- Relatórios de comissões por comanda
-- Total geral de comissões
+- Relatórios de comissões
 
-### 🖨️ Sistema de Impressão POS
-- Impressão de recibos formatados
-- Visualização de detalhes da comanda
-- Listagem de itens com preços
-
-## Requisitos
+## 📋 Requisitos
 
 - .NET 9.0 SDK ou superior
 - SQLite (incluído automaticamente via Entity Framework Core)
 
-## Instalação
+## 🔧 Instalação
 
 1. Clone o repositório:
 ```bash
@@ -58,87 +65,186 @@ dotnet restore
 dotnet run
 ```
 
-O banco de dados SQLite (`pdv.db`) será criado automaticamente na primeira execução.
+A API estará disponível em `http://localhost:5000`
 
-## Como Usar
+## 📖 Documentação da API
 
-### Menu Principal
+Consulte [API_DOCUMENTATION.md](API_DOCUMENTATION.md) para documentação completa dos endpoints.
 
-O sistema apresenta um menu interativo com as seguintes opções:
-
-#### Comandas
-1. **Abrir Nova Comanda** - Cria uma nova comanda com número sequencial
-2. **Lançar Produto na Comanda** - Adiciona produtos usando código numérico
-3. **Visualizar Comanda** - Exibe detalhes e recibo da comanda
-4. **Fechar Comanda** - Encerra a comanda e imprime recibo final
-5. **Listar Comandas Abertas** - Mostra todas as comandas em aberto
+### Endpoints Principais
 
 #### Produtos
-6. **Cadastrar Produto** - Registra novos produtos no sistema
-7. **Listar Produtos** - Exibe todos os produtos cadastrados
+- `GET /api/products` - Lista produtos
+- `POST /api/products` - Cria produto
+- `PUT /api/products/{id}` - Atualiza produto (incluindo grupo/subgrupo)
+- `DELETE /api/products/{id}` - Desativa produto
 
-#### Comissões
-8. **Lançar Comissão** - Registra comissão de staff em uma comanda
-9. **Visualizar Comissões** - Relatórios de comissões (por staff, comanda ou total)
+#### Grupos e Subgrupos
+- `GET /api/groups` - Lista grupos
+- `POST /api/groups` - Cria grupo
+- `GET /api/subgroups` - Lista subgrupos
+- `POST /api/subgroups` - Cria subgrupo
 
-### Fluxo de Trabalho Típico
+#### Clientes
+- `GET /api/customers` - Lista clientes
+- `POST /api/customers` - Cria cliente
+- `POST /api/customers/{id}/credit` - **Adiciona crédito (pagar conta)**
+- `GET /api/customers/{id}/ledger` - Histórico da caderneta
 
-1. **Abrir uma comanda** (opção 1)
-   - Informar nome do cliente
-   - Anotar o número da comanda gerado
+#### Vendas/Mesas
+- `POST /api/sales` - Cria venda (mesa ou cliente)
+- `GET /api/sales/table/{tableNumber}` - **Vendas abertas de uma mesa**
+- `POST /api/sales/{id}/items` - Adiciona produtos
+- `POST /api/sales/{id}/close` - **Fecha venda com tipo de pagamento**
 
-2. **Lançar produtos** (opção 2)
-   - Informar número da comanda
-   - Informar código do produto (ex: 2 para cerveja)
-   - Informar quantidade
+## 🎯 Casos de Uso
 
-3. **Adicionar comissões** (opção 8) se necessário
-   - Informar número da comanda
-   - Informar nome da garota
-   - Informar valor da comissão
+### Mesa (F4) - Venda em Aberto
+```bash
+# 1. Abrir mesa 1
+curl -X POST http://localhost:5000/api/sales \
+  -H "Content-Type: application/json" \
+  -d '{"tableNumber":1}'
 
-4. **Fechar comanda** (opção 4)
-   - Informar número da comanda
-   - O sistema exibe o recibo final
+# 2. Adicionar 3 cervejas
+curl -X POST http://localhost:5000/api/sales/1/items \
+  -H "Content-Type: application/json" \
+  -d '{"productCode":2,"quantity":3}'
 
-## Estrutura do Projeto
+# 3. Consultar mesa
+curl http://localhost:5000/api/sales/table/1
+
+# 4. Fechar mesa com dinheiro
+curl -X POST http://localhost:5000/api/sales/1/close \
+  -H "Content-Type: application/json" \
+  -d '{"paymentType":"CASH"}'
+```
+
+### Caderneta (F5) - Débito do Cliente
+```bash
+# 1. Criar cliente
+curl -X POST http://localhost:5000/api/customers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"João Silva","phone":"11999999999"}'
+
+# 2. Abrir venda para cliente
+curl -X POST http://localhost:5000/api/sales \
+  -H "Content-Type: application/json" \
+  -d '{"customerId":1}'
+
+# 3. Adicionar produtos
+curl -X POST http://localhost:5000/api/sales/2/items \
+  -H "Content-Type: application/json" \
+  -d '{"productCode":52,"quantity":2}'
+
+# 4. Fechar venda na caderneta
+curl -X POST http://localhost:5000/api/sales/2/close \
+  -H "Content-Type: application/json" \
+  -d '{"paymentType":"LEDGER"}'
+
+# 5. Cliente paga R$ 50,00
+curl -X POST http://localhost:5000/api/customers/1/credit \
+  -H "Content-Type: application/json" \
+  -d '{"amount":50,"description":"Pagamento"}'
+
+# 6. Ver extrato
+curl http://localhost:5000/api/customers/1/ledger
+```
+
+### Produto com Grupo/Subgrupo
+```bash
+# 1. Criar grupo
+curl -X POST http://localhost:5000/api/groups \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Bebidas","description":"Grupo de bebidas"}'
+
+# 2. Criar subgrupo
+curl -X POST http://localhost:5000/api/subgroups \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Cervejas","groupId":1}'
+
+# 3. Atualizar produto
+curl -X PUT http://localhost:5000/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Cerveja","price":5.00,"category":"Bebida","isActive":true,"groupId":1,"subgroupId":1}'
+```
+
+## 🏗️ Estrutura do Projeto
 
 ```
 PDVCasaVerde/
+├── Controllers/          # Controladores da API
+│   ├── ProductsController.cs
+│   ├── GroupsController.cs
+│   ├── SubgroupsController.cs
+│   ├── CustomersController.cs
+│   └── SalesController.cs
 ├── Data/
-│   └── PDVContext.cs          # Contexto do banco de dados
-├── Models/
-│   ├── Product.cs             # Modelo de Produto
-│   ├── Command.cs             # Modelo de Comanda
-│   ├── CommandItem.cs         # Modelo de Item da Comanda
-│   └── Commission.cs          # Modelo de Comissão
-├── Services/
-│   ├── ProductService.cs      # Serviço de produtos
-│   ├── CommandService.cs      # Serviço de comandas
-│   ├── CommissionService.cs   # Serviço de comissões
-│   └── PrintService.cs        # Serviço de impressão
-└── Program.cs                 # Ponto de entrada e menu principal
+│   └── PDVContext.cs    # Contexto do banco de dados
+├── DTOs/                # Data Transfer Objects
+│   ├── ProductDtos.cs
+│   ├── GroupDtos.cs
+│   ├── CustomerDtos.cs
+│   └── SaleDtos.cs
+├── Models/              # Modelos do domínio
+│   ├── Product.cs
+│   ├── Group.cs
+│   ├── Subgroup.cs
+│   ├── Customer.cs
+│   ├── CustomerLedgerEntry.cs
+│   ├── Sale.cs
+│   ├── SaleItem.cs
+│   ├── Command.cs       # Sistema legado
+│   └── Commission.cs
+├── Services/            # Lógica de negócio
+│   ├── ProductService.cs
+│   ├── GroupService.cs
+│   ├── SubgroupService.cs
+│   ├── CustomerService.cs
+│   └── SaleService.cs
+└── Program.cs          # Configuração da API
 ```
 
-## Tecnologias Utilizadas
-
-- **C# 11** com .NET 9.0
-- **Entity Framework Core 9.0** - ORM para acesso ao banco
-- **SQLite** - Banco de dados embutido
-- **Microsoft.EntityFrameworkCore.Sqlite** - Provider SQLite para EF Core
-- **Microsoft.EntityFrameworkCore.Design** - Ferramentas de design do EF Core
-
-## Banco de Dados
+## 💾 Banco de Dados
 
 O sistema utiliza SQLite com as seguintes tabelas:
 
-- **Products** - Produtos disponíveis
-- **Commands** - Comandas (abertas e fechadas)
-- **CommandItems** - Itens das comandas
-- **Commissions** - Comissões registradas
+- **Products** - Produtos com grupos e subgrupos
+- **Groups** - Grupos de produtos
+- **Subgroups** - Subgrupos de produtos
+- **Customers** - Clientes com saldo
+- **CustomerLedgerEntries** - Histórico de débitos/créditos
+- **Sales** - Vendas (mesas e clientes)
+- **SaleItems** - Itens das vendas
+- **Commands** - Comandas (sistema legado)
+- **Commissions** - Comissões
 
-O banco é criado automaticamente com dados iniciais (cerveja, balde de Skol e comissão).
+O banco é criado automaticamente na primeira execução.
 
-## Licença
+## 🔒 Tecnologias Utilizadas
+
+- **C# 11** com .NET 9.0
+- **ASP.NET Core** - Framework Web API
+- **Entity Framework Core 9.0** - ORM
+- **SQLite** - Banco de dados embutido
+- **Swagger/OpenAPI** - Documentação da API
+- **Microsoft.AspNetCore.OpenApi** - Suporte OpenAPI
+- **Swashbuckle.AspNetCore** - UI do Swagger
+
+## 📝 Licença
 
 Este projeto é de código aberto e está disponível para uso livre.
+
+## 👨‍💻 Desenvolvimento
+
+Para contribuir com o projeto:
+
+1. Faça um fork do repositório
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 🐛 Problemas e Sugestões
+
+Para reportar bugs ou sugerir melhorias, abra uma [issue](https://github.com/godfathercorleone994-wq/PDV-Casa-Verde/issues) no GitHub.
