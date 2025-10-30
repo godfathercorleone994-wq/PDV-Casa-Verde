@@ -29,6 +29,12 @@ public class ProductService
 
     public async Task<Product> CreateAsync(Product product)
     {
+        var existing = await _context.Products.FirstOrDefaultAsync(p => p.Code == product.Code);
+        if (existing != null)
+        {
+            throw new InvalidOperationException($"Já existe um produto com o código {product.Code}");
+        }
+        
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
         return product;

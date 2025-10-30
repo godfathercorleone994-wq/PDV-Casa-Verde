@@ -15,22 +15,32 @@ public class CommandService
 
     public async Task<Command> CreateCommandAsync(string clientName)
     {
-        var lastCommand = await _context.Commands
-            .OrderByDescending(c => c.CommandNumber)
-            .FirstOrDefaultAsync();
-
-        var command = new Command
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            CommandNumber = (lastCommand?.CommandNumber ?? 0) + 1,
-            ClientName = clientName,
-            OpenedAt = DateTime.Now,
-            IsOpen = true,
-            TotalAmount = 0
-        };
+            var lastCommand = await _context.Commands
+                .OrderByDescending(c => c.CommandNumber)
+                .FirstOrDefaultAsync();
 
-        _context.Commands.Add(command);
-        await _context.SaveChangesAsync();
-        return command;
+            var command = new Command
+            {
+                CommandNumber = (lastCommand?.CommandNumber ?? 0) + 1,
+                ClientName = clientName,
+                OpenedAt = DateTime.Now,
+                IsOpen = true,
+                TotalAmount = 0
+            };
+
+            _context.Commands.Add(command);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return command;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<Command?> GetCommandByNumberAsync(int commandNumber)

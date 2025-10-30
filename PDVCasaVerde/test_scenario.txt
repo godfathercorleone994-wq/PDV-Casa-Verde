@@ -1,0 +1,9 @@
+Test Scenario: Complete PDV Workflow
+
+1. Open Command for "João" - Command #1
+2. Add items:
+   - 2x Cerveja (Code 2) = R$ 10.00
+   - 1x Balde de Skol (Code 52) = R$ 25.00
+3. View Command #1 - Total should be R$ 35.00
+4. Add Commission: Maria, R$ 50.00
+5. Close Command #1
